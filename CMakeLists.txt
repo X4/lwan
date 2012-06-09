@@ -25,6 +25,29 @@ else ()
 	message(STATUS "Valgrind headers not found -- disabling valgrind support")
 endif()
 
+find_path(LUA_INCLUDE_DIR lua.h
+	HINTS $ENV{LUA_DIR}
+	PATH_SUFFIXES include/lua52 include/lua5.2 include/lua include
+	PATHS /usr/include /usr/local/include
+)
+
+find_library(LUA_LIBRARY
+	NAMES lua52 lua5.2 lua-5.2 lua
+	HINTS $ENV{LUA_DIR}
+	PATH_SUFFIXES lib64 lib
+	PATHS /usr /usr/local
+)
+
+if (LUA_LIBRARY AND LUA_INCLUDE_DIR)
+	message(STATUS "Lua 5.2 found at ${LUA_LIBRARY}, includes at ${LUA_INCLUDE_DIR}")
+	add_definitions(-DHAS_LUA)
+	include_directories(${LUA_INCLUDE_DIR})
+	set(LUA_HANDLER "lwan-lua.c")
+else()
+	message(STATUS "Lua 5.2 not found")
+	set(LUA_HANDLER "")
+endif ()
+
 add_executable(lwan
 	main.c
 	lwan.c
@@ -37,9 +60,11 @@ add_executable(lwan
 	int-to-str.c
 	lwan-trie.c
 	strbuf.c
+	${LUA_HANDLER}
 )
 
 target_link_libraries(lwan
 	${CMAKE_THREAD_LIBS_INIT}
 	${TCMALLOC_LIBRARY}
+	${LUA_LIBRARY}
 )

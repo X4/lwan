@@ -21,6 +21,10 @@
 #include "lwan.h"
 #include "lwan-serve-files.h"
 
+#ifdef HAS_LUA
+#include "lwan-lua.h"
+#endif
+
 lwan_http_status_t
 gif_beacon(lwan_request_t *request __attribute__((unused)),
            lwan_response_t *response,
@@ -71,6 +75,9 @@ main(void)
         { .prefix = "/beacon", .callback = gif_beacon, .data = NULL },
         { .prefix = "/favicon.ico", .callback = gif_beacon, .data = NULL },
         { .prefix = "/", .callback = serve_files, .data = "./files_root" },
+#ifdef HAS_LUA
+        { .prefix = "/lua", .callback = lua, .data = "index.lua" },
+#endif
         { .prefix = NULL },
     };
     lwan_t l = {
